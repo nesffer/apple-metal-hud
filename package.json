@@ -1,0 +1,57 @@
+{
+  "name": "@nesffer/apple-metal-hud",
+  "version": "1.0.0",
+  "description": "CLI tool to launch Apple device apps with Metal HUD enabled for GPU performance monitoring",
+  "main": "dist/index.js",
+  "bin": {
+    "apple-metal-hud": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "cli",
+    "apple",
+    "device",
+    "xcrun",
+    "metal",
+    "hud",
+    "gpu",
+    "performance",
+    "ios",
+    "ipados",
+    "watchos",
+    "tvos",
+    "macos"
+  ],
+  "author": "nesffer",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nesffer/apple-metal-hud.git"
+  },
+  "homepage": "https://github.com/nesffer/apple-metal-hud#readme",
+  "bugs": {
+    "url": "https://github.com/nesffer/apple-metal-hud/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "dependencies": {
+    "commander": "^11.0.0"
+  }
+}
