@@ -1,6 +1,6 @@
 {
   "name": "@nesffer/apple-metal-hud",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool to launch Apple device apps with Metal HUD enabled for GPU performance monitoring",
   "main": "dist/index.js",
   "bin": {

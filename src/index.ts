@@ -218,6 +218,61 @@ class DeviceManager {
   }
 
   /**
+   * 애플리케이션 프로세스를 종료합니다.
+   */
+  async terminateApplication(
+    deviceIdentifier: string,
+    app: ApplicationInfo
+  ): Promise<void> {
+    if (!app.pid) {
+      console.log("⚠️  PID 정보가 없어서 애플리케이션을 종료할 수 없습니다.");
+      return;
+    }
+
+    try {
+      console.log("🛑 애플리케이션을 종료하는 중...");
+      console.log(`📱 디바이스: ${deviceIdentifier}`);
+      console.log(`🎮 앱: ${app.displayName}`);
+      console.log(`🆔 PID: ${app.pid}`);
+      console.log("");
+
+      const command = `xcrun devicectl device process terminate --device ${deviceIdentifier} --pid ${app.pid}`;
+
+      console.log("🔧 종료 명령어:");
+      console.log(command);
+      console.log("");
+
+      // 명령어 실행
+      const output = execSync(command, {
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+
+      console.log("✅ 애플리케이션이 성공적으로 종료되었습니다!");
+
+      if (output.trim()) {
+        console.log("\n📋 종료 결과:");
+        console.log(output);
+      }
+
+      // 종료 후 잠시 대기 (프로세스가 완전히 종료될 시간 확보)
+      console.log("⏳ 프로세스 종료 완료를 위해 2초 대기 중...");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    } catch (error: any) {
+      console.error("❌ 애플리케이션 종료에 실패했습니다:");
+      console.error(error.message);
+
+      if (error.message.includes("not found")) {
+        console.error("💡 해당 PID의 프로세스를 찾을 수 없습니다.");
+      } else if (error.message.includes("permission")) {
+        console.error("💡 프로세스 종료 권한이 없습니다.");
+      }
+
+      throw error;
+    }
+  }
+
+  /**
    * Metal HUD를 활성화하여 애플리케이션을 실행합니다.
    */
   async launchAppWithMetalHUD(
@@ -229,7 +284,7 @@ class DeviceManager {
     }
 
     try {
-      console.log("🚀 Metal HUD를 활성화하여 애플리케이션을 실행합니다...");
+      console.log("🚀 Metal HUD를 활성화하여 애플리케이션을 재실행합니다...");
       console.log(`📱 디바이스: ${deviceIdentifier}`);
       console.log(`🎮 앱: ${app.displayName}`);
       console.log(`📂 경로: ${app.fullPath}`);
@@ -556,14 +611,31 @@ async function main() {
         console.log(`📦 Bundle ID: ${selectedApp.bundleId}`);
         console.log(`📂 경로: ${selectedApp.fullPath}`);
 
-        // 3단계: Metal HUD로 앱 실행
+        // 3단계: 기존 앱 프로세스 종료
         if (options.launch !== false) {
           // 기본적으로 바로 실행
+          await deviceManager.terminateApplication(
+            selectedIdentifier,
+            selectedApp
+          );
+
+          // 4단계: Metal HUD로 앱 재실행
           await deviceManager.launchAppWithMetalHUD(
             selectedIdentifier,
             selectedApp
           );
         } else {
+          console.log(`\n🔧 애플리케이션 종료 명령어:`);
+          if (selectedApp.pid) {
+            console.log(
+              `xcrun devicectl device process terminate --device ${selectedIdentifier} --pid ${selectedApp.pid}`
+            );
+          } else {
+            console.log(
+              "⚠️  PID 정보가 없어서 종료 명령어를 생성할 수 없습니다."
+            );
+          }
+
           console.log(`\n🔧 Metal HUD 실행 명령어:`);
           console.log(
             `xcrun devicectl device process launch -e '{"MTL_HUD_ENABLED": "1"}' --console --device ${selectedIdentifier} "${selectedApp.fullPath}"`
